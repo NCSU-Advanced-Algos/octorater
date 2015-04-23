@@ -18,9 +18,11 @@ import backtype.storm.tuple.Fields;
  *	Shubham Bhawsinka (sbhawsi)
  */
 public class MovieTopology {
+	private final static String API_KEY = "qynq4687htc3z7mq2ec7y67x";
+	
 	public static StormTopology buildTopology(LocalDRPC drpc) {
 		TridentTopology topology = new TridentTopology();
-		IBatchSpout rottenSpout = new RottenSpout();
+		IBatchSpout rottenSpout = new RottenSpout("e", API_KEY);
 		topology.newStream("rotten", rottenSpout)
 				.each(new Fields("text"), new PrintFilter());
 		return topology.build();

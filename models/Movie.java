@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 /**
  * @author
  *  George Mathew (george2),
@@ -77,7 +81,33 @@ public class Movie implements Serializable {
 			this.comments = new ArrayList<String>();
 		this.comments.add(comment);
 	}
-
+	
+	public static Movie makeMovie(JSONObject movieJSON) {
+		try {
+			Movie movie = new Movie(movieJSON.get("id").toString(), movieJSON.get("title").toString(), Integer.parseInt(((JSONObject)movieJSON.get("ratings")).get("audience_score").toString()));
+			return movie;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public void updateComments(String reviewsAsString) {
+		try {
+			JSONParser parser = new JSONParser();
+			JSONArray reviews = (JSONArray)((JSONObject) parser.parse(reviewsAsString)).get("reviews");
+			if (comments == null) 
+				comments = new ArrayList<String>();
+			JSONObject reviewObj;
+			for (Object review : reviews) {
+				reviewObj = (JSONObject) review;
+				comments.add(reviewObj.get("quote").toString());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return "Movie [name=" + name + ", id=" + id + ", rating=" + rating
