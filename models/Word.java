@@ -44,4 +44,11 @@ public class Word implements Serializable {
 	public void setScore(float score) {
 		this.score = score;
 	}
+
+	@Override
+	public String toString() {
+		return "Word [name=" + name + ", tag=" + tag + ", score=" + score + "]";
+	}
+	
+	
 }

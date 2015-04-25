@@ -1,6 +1,10 @@
 package storm.starter.trident.octorater.utilities;
 
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +18,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import storm.starter.trident.octorater.models.Movie;
+import storm.starter.trident.octorater.models.Word;
 
 
 /**
@@ -152,8 +157,51 @@ public class Utils {
 		return movies;
 	}
 	
+	public static List<Word> parseWords(){
+		BufferedReader br =null;
+		String line;
+		List<Word> words = new ArrayList<Word>();
+		Word word = null;
+		String[] splits;
+		try {
+			br = new BufferedReader(new FileReader(Constants.SUBJECTIVITY_PATH));
+			while ((line = br.readLine())!=null) {
+				splits = line.split(",");
+				word = new Word();
+				word.setName(splits[0].trim());
+				if (splits[1].equals(Constants.STRONG_SUB) && splits[2].equals(Constants.NEGATIVE)) {
+					word.setScore(Constants.BAD);
+				} else if (splits[1].equals(Constants.WEAK_SUB) && splits[2].equals(Constants.NEGATIVE)) {
+					word.setScore(Constants.AVERAGE);
+				} else if (splits[1].equals(Constants.WEAK_SUB) && splits[2].equals(Constants.POSITIVE)) {
+					word.setScore(Constants.GOOD);
+				} else if (splits[1].equals(Constants.STRONG_SUB) && splits[2].equals(Constants.POSITIVE)) {
+					word.setScore(Constants.BEST);
+				}
+				System.out.println(word);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new RuntimeException(e);
+				}
+			}
+			
+		}
+		return null;
+	}
 	public static void main(String[] args) {
-		System.out.println(getMovieStream("e", 5, 1, "qynq4687htc3z7mq2ec7y67x").size());
+		//System.out.println(getMovieStream("e", 5, 1, "qynq4687htc3z7mq2ec7y67x").size());
+		parseWords();
 	}
 	
 }
