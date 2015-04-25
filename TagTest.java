@@ -1,8 +1,10 @@
+package storm.starter.trident.octorater;
+
 import java.io.IOException;
  
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
  
-public class TagText {
+public class TagTest {
     public static void main(String[] args) throws IOException,
             ClassNotFoundException {
  
