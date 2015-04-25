@@ -21,7 +21,7 @@ public class Movie implements Serializable {
 	
 	private String name;
 	private String id;
-	private String rating;
+	private int rating;
 	private int score;
 	private List<String> comments;
 	
@@ -52,11 +52,11 @@ public class Movie implements Serializable {
 		this.id = id;
 	}
 
-	public String getRating() {
+	public int getRating() {
 		return rating;
 	}
 
-	public void setRating(String rating) {
+	public void setRating(int rating) {
 		this.rating = rating;
 	}
 
