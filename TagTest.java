@@ -9,7 +9,7 @@ public class TagTest {
             ClassNotFoundException {
  
         // Initialize the tagger
-        MaxentTagger tagger = new MaxentTagger();
+        MaxentTagger tagger = new MaxentTagger("data/left3words-wsj-0-18.tagger");
  
         // The sample string
         String sample = "This is a sample text";
