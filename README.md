@@ -22,3 +22,8 @@ Rate My Movie implementation in Trident
 * To develop in eclipse, from the package ```storm.starter.trident.octorater``` , copy stanford-postagger.jar to root of the project(storm-starter) and add it to classpath.
 * Start Coding
 
+#### For ElasticSearch
+* Download ElasticSearch for ur particular OS and install it from [here](https://www.elastic.co/downloads/elasticsearch)
+* Once installed/unzipped , navigate to the bin folder and run elasticsearch. (.bat for windows and .sh for *nix based)
+* Run octorater.db.ElasticDB.java to populate your db
+* See if it works by navigating to http://127.0.0.1:9200/rotten/words/_search
