@@ -17,6 +17,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import storm.starter.trident.octorater.db.ElasticDB;
 import storm.starter.trident.octorater.models.Movie;
 import storm.starter.trident.octorater.models.Word;
 
@@ -163,6 +164,7 @@ public class Utils {
 		List<Word> words = new ArrayList<Word>();
 		Word word = null;
 		String[] splits;
+		ElasticDB elasticDB = new ElasticDB();
 		try {
 			br = new BufferedReader(new FileReader(Constants.SUBJECTIVITY_PATH));
 			while ((line = br.readLine())!=null) {
@@ -178,8 +180,10 @@ public class Utils {
 				} else if (splits[1].equals(Constants.STRONG_SUB) && splits[2].equals(Constants.POSITIVE)) {
 					word.setScore(Constants.BEST);
 				}
-				System.out.println(word);
+				word.setTag(POSTagger.getTag(word.getName()));
+				words.add(word);
 			}
+			elasticDB.bulkAddWords(words);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -195,12 +199,10 @@ public class Utils {
 					throw new RuntimeException(e);
 				}
 			}
-			
 		}
-		return null;
+		return words;
 	}
 	public static void main(String[] args) {
-		//System.out.println(getMovieStream("e", 5, 1, "qynq4687htc3z7mq2ec7y67x").size());
 		parseWords();
 	}
 	

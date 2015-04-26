@@ -1,15 +1,30 @@
 package storm.starter.trident.octorater.db;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexAction;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.node.Node;
+import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.search.SearchHit;
 
+import storm.starter.trident.octorater.models.Word;
 import storm.starter.trident.octorater.utilities.Constants;
+import storm.starter.trident.octorater.utilities.Utils;
 
 
 /**
@@ -20,30 +35,53 @@ import storm.starter.trident.octorater.utilities.Constants;
  *	Shubham Bhawsinka (sbhawsi)
  */
 public class ElasticDB {
-	private static TransportClient client = null; 
 	
 	/***
 	 * Static Method to create client
 	 * @return
 	 */
-	public static TransportClient createClient() {
-		if (client == null) {
-			client = new TransportClient();
-			client = client.addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
-		}
+	@SuppressWarnings("resource")
+	public Client createClient() {
+		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
 		return client;
 	}
 	
-	
-	public void createIndex() {
-		createClient();
-		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate(Constants.DB_INDEX);
-		createIndexRequestBuilder.execute().actionGet();
+	/***
+	 * Close an existing Elastic Search client
+	 * @param client
+	 */
+	public void closeClient(Client client) {
+		client.close();
+	}
+
+	/***
+	 * Create a Node for connection
+	 * @return
+	 */
+	public Node createNode() {
+		Node node = NodeBuilder.nodeBuilder().client(true).node();
+		return node;
 	}
 	
+	public void closeNode(Node node) {
+		node.close();
+	}
+	
+	/***
+	 * Create An Index to store words
+	 */
+	public void createIndex() {
+		Client client = createClient();
+		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate(Constants.DB_INDEX);
+		createIndexRequestBuilder.execute().actionGet();
+		closeClient(client);
+	}
+	
+	/***
+	 * Drop the existing index
+	 */
 	public void dropIndex() {
-		createClient();
-		
+		Client client = createClient();
 		try {
 			DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest(Constants.DB_INDEX)).actionGet();
 			if (!delete.isAcknowledged())
@@ -52,17 +90,118 @@ public class ElasticDB {
 			System.out.println("Index does not exist");
 			e.printStackTrace();
 		}
-		
+		closeClient(client);
 	}
 	
-	public void getScore(){
-		
+	/***
+	 * Add a single word to the elastic search DB
+	 * @param word
+	 */
+	public void addWord(Word word){
+		Client client = createClient();
+		IndexRequest indexRequest = new IndexRequest(Constants.DB_INDEX, Constants.DB_TYPE);
+		indexRequest.source(word.toMap());
+		client.index(indexRequest).actionGet();
+		closeClient(client);
 	}
+	
+	/***
+	 * Add a bunch of words to the elastic search db
+	 * @param words
+	 */
+	@SuppressWarnings("unchecked")
+	public void bulkAddWords(List<Word> words) {
+		Node node = createNode();
+		Client client = node.client();
+		BulkRequestBuilder bulkBuilder = client.prepareBulk();
+		int bulkSize = 0;
+		for (Word word: words) {
+			bulkBuilder.add(client.prepareIndex(Constants.DB_INDEX, Constants.DB_TYPE).setSource(word.toMap()));
+			bulkSize++;
+			if (bulkSize % 1000 == 0) {
+				System.out.println("Adding Batch");
+				BulkResponse response = bulkBuilder.execute().actionGet();
+				if (response.hasFailures()) {
+					System.err.println("Error occured whilst adding bulk messages " + response.buildFailureMessage());
+				}
+				bulkBuilder = client.prepareBulk();
+			}
+		}
+		if(bulkBuilder.numberOfActions() > 0){
+	       BulkResponse bulkRes = bulkBuilder.execute().actionGet();
+	       if(bulkRes.hasFailures()){
+	          System.err.println("##### Bulk Request failure with error: " +   bulkRes.buildFailureMessage());
+	       }
+	       bulkBuilder = client.prepareBulk();
+	    }
+		closeNode(node);
+	}
+	
+	/***
+	 * Retrieve a word from elastic Search
+	 * @param wordName - Word to be retrieved.
+	 * @return - Word object of that particular word
+	 */
+	public Word getWord(String wordName) {
+		Client client = createClient();
+		SearchResponse response = client.prepareSearch(Constants.DB_INDEX)
+								.setTypes(Constants.DB_TYPE)
+								.setQuery(QueryBuilders.termQuery("name", wordName))
+								.execute().actionGet();
+		if (response.getHits().getHits().length == 0) {
+			closeClient(client);
+			return null;
+		}
+		Map<String, Object> wordMap = response.getHits().getHits()[0].getSource();
+		Word word = new Word();
+		word.setID(response.getHits().getHits()[0].getId());
+		word.setName(wordMap.get("name").toString());
+		word.setTag(wordMap.get("tag").toString());
+		word.setScore(Float.parseFloat(wordMap.get("score").toString()));		
+		closeClient(client);
+		return word;
+	}
+	
+	/***
+	 * Update a certain word in elastic search
+	 * @param wordName - Word to be updated
+	 * @param delta - Margin to increase score by
+	 */
+	public void updateWord(String wordName, Float delta){
+		Word word = getWord(wordName);
+		if (word == null) {
+			// TODO - Handle case if word does not exist.
+			// My suggestion is to add the word to DB with the default value(say 60) and then update
+			// it gradually
+			return;
+		}
+		Client client = createClient();
+		UpdateRequest request = new UpdateRequest(Constants.DB_INDEX, Constants.DB_TYPE, word.getID());
+		try {
+			request.doc(XContentFactory.jsonBuilder()
+					.startObject()
+						.field("score", word.getScore()+delta)
+					.endObject());
+			client.update(request).get();
+			closeClient(client);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("Error occured while updating word. Error : " + e.getMessage());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			System.err.println("Error occured while updating word. Error : " + e.getMessage());
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+			System.err.println("Error occured while updating word. Error : " + e.getMessage());
+		}
+	}
+	
 	
 	public static void main(String[] args) {
 		ElasticDB elasticDB = new ElasticDB();
+		elasticDB.dropIndex();
 		elasticDB.createIndex();
-		//`elasticDB.dropIndex();
+		Utils.parseWords();
 	}
 	
 	

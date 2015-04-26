@@ -3,6 +3,12 @@
  */
 package storm.starter.trident.octorater.utilities;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author
  *  George Mathew (george2),
@@ -22,4 +28,9 @@ public class Constants {
 	public static final String POSITIVE = "positive";
 	public static final String NEGATIVE = "negative";
 	public static final String SUBJECTIVITY_PATH= "data/subjectivity.csv";
+	public static Set<String> ValidTags = new HashSet<String>(
+			Arrays.asList(new String[]{
+					"JJ", "JJR", "JJS", "RB", "RBR", "RBS"
+					,"VB", "VBD", "VBG", "VBN", "VBP", "VBZ"}
+			));
 }

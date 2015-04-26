@@ -16,6 +16,8 @@
 package storm.starter.trident.octorater.utilities;
 
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,13 +30,28 @@ public class POSTagger {
     String comment;
     PriorityQueue<String> priQueue;
    // int k=Integer.MAX_VALUE;
+    private static MaxentTagger tagger;
     
+    public static MaxentTagger getTagger() {
+    	if (tagger == null) {
+    		try {
+				tagger = new MaxentTagger("data/left3words-wsj-0-18.tagger");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	return tagger;
+    }
 
+    public static String getTag(String word) {
+    	return getTagger().tagString(word).split("/")[1];
+    }
+    
     public void addToTagger(String element){
-      MaxentTagger tagger =  new MaxentTagger("left3words-wsj-0-18.tagger");
-      String tagged = tagger.tagString(element);
-      System.out.println(tagged);
-        
+    	String tagged = getTagger().tagString(element);
+    	System.out.println(tagged);
     }
     
     public List<String> printTopK(int k){
@@ -49,6 +66,6 @@ public class POSTagger {
     
     public static void main(String args[]){
         POSTagger p = new POSTagger();
-        p.addToTagger("I am a Boy with a sword");
+        p.addToTagger("I");
     }
 }

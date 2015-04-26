@@ -4,6 +4,8 @@
 package storm.starter.trident.octorater.models;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author root
@@ -20,6 +22,9 @@ public class Word implements Serializable {
 	private String tag;
 	
 	private float score;
+	
+	private String _id;
+	
 	
 	public String getName() {
 		return name;
@@ -45,10 +50,31 @@ public class Word implements Serializable {
 		this.score = score;
 	}
 
+	public void setID(String _id){
+		this._id = _id;
+	}
+	
+	public String getID() {
+		return _id;
+	}
+	
 	@Override
 	public String toString() {
 		return "Word [name=" + name + ", tag=" + tag + ", score=" + score + "]";
 	}
 	
+	/***
+	 * Utility method to convert a word object to a hash map
+	 * @param word
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map toMap(){
+		Map wordMap = new HashMap();
+		wordMap.put("name", this.name);
+		wordMap.put("tag", this.tag);
+		wordMap.put("score", this.score);
+		return wordMap;
+	}
 	
 }
