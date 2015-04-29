@@ -34,13 +34,8 @@ public class POSTagger {
     
     public static MaxentTagger getTagger() {
     	if (tagger == null) {
-    		try {
-				tagger = new MaxentTagger("data/left3words-wsj-0-18.tagger");
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+            tagger = new MaxentTagger("data/english-left3words-distsim.tagger");
+			
     	}
     	return tagger;
     }
@@ -66,6 +61,6 @@ public class POSTagger {
     
     public static void main(String args[]){
         POSTagger p = new POSTagger();
-        p.addToTagger("I");
+        p.addToTagger("Kapil");
     }
 }
