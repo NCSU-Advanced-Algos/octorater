@@ -17,11 +17,12 @@ package storm.starter.trident.octorater.utilities;
 
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
+import storm.starter.trident.octorater.db.ElasticDB;
+import storm.starter.trident.octorater.models.Word;
 /**
  *
  * @author shubham
@@ -31,6 +32,11 @@ public class POSTagger {
     PriorityQueue<String> priQueue;
    // int k=Integer.MAX_VALUE;
     private static MaxentTagger tagger;
+    ElasticDB eDB;
+    
+    public POSTagger() {
+        eDB = new ElasticDB();
+    }
     
     public static MaxentTagger getTagger() {
     	if (tagger == null) {
@@ -44,9 +50,35 @@ public class POSTagger {
     	return getTagger().tagString(word).split(Constants.TAG_SEPERATOR)[1];
     }
     
-    public void addToTagger(String element){
-    	String tagged = getTagger().tagString(element);
-    	System.out.println(tagged);
+    public String[] addToTagger(String element){
+        
+    	return getTagger().tagString(element).split(" ");
+        
+        
+    }
+    
+    public float evaluate(String sentence) {
+        
+        String words[] = addToTagger(sentence);
+        
+        float score = 0;
+        int count = 0;
+        
+        for(String word: words) {       
+            if( Constants.ValidTags.contains(getTag(word))) {
+                Word w = eDB.getWord(word);
+                if(w != null) {
+                    score += w.getScore();
+                    count++;
+                }
+            }
+        }
+        
+        if(count > 0) {
+            score = score/count;
+        }
+        
+        return score;
     }
     
     public List<String> printTopK(int k){
@@ -61,6 +93,6 @@ public class POSTagger {
     
     public static void main(String args[]){
         POSTagger p = new POSTagger();
-        p.addToTagger("Kapil");	
+        p.addToTagger("It was an excellent movie");	
     }
 }

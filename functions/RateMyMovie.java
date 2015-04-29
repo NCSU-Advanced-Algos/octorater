@@ -26,7 +26,7 @@ public class RateMyMovie extends BaseFunction {
 		int commentRating = 0;
 		int movieRating = 0;
 		for(String comment : comments){
-			//commentRating = commentRating + posTagger.evaluate(comment);
+			commentRating += posTagger.evaluate(comment);
 			count++;
 		}
 		movieRating = commentRating/count;
