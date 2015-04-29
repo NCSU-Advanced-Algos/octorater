@@ -55,7 +55,7 @@ public class POSTagger implements Serializable{
     	List<String> validWords = new ArrayList<String>();
     	for (String word : getTagger().tagString(sentence).split(" ")) {
     		if (Constants.ValidTags.contains(getTag(word))) {
-    			validWords.add(word.split("_")[0]);
+    			validWords.add(word.split("_")[0].toLowerCase());
     		}
     	}
     	return validWords;
