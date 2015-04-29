@@ -1,7 +1,9 @@
 package storm.starter.trident.octorater;
 
 import storm.starter.trident.octorater.filters.PrintFilter;
+import storm.starter.trident.octorater.functions.RateMyMovie;
 import storm.starter.trident.octorater.spout.RottenSpout;
+import storm.starter.trident.octorater.utilities.POSTagger;
 import storm.trident.TridentTopology;
 import storm.trident.spout.IBatchSpout;
 import backtype.storm.Config;
@@ -23,6 +25,8 @@ public class MovieTopology {
 	public static StormTopology buildTopology(LocalDRPC drpc) {
 		TridentTopology topology = new TridentTopology();
 		IBatchSpout rottenSpout = new RottenSpout("e", API_KEY);
+		POSTagger tagger = new POSTagger();
+		RateMyMovie movieRater = new RateMyMovie(tagger);
 		topology.newStream("rotten", rottenSpout)
 				.each(new Fields("text"), new PrintFilter());
 		return topology.build();
