@@ -35,4 +35,5 @@ public class Constants {
 	public static final String TAG_SEPERATOR="_";
 	public static final float DELTA = 1f;
 	public static final int FEEDBACK_THRESHOLD = 100;
+	public static final String OUTPUT_FILE_PATH = "results/result.txt";
 }

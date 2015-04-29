@@ -2,9 +2,13 @@ package storm.starter.trident.octorater.utilities;
 
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +22,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import storm.starter.trident.octorater.db.ElasticDB;
+import storm.starter.trident.octorater.filters.PrintFilter;
 import storm.starter.trident.octorater.models.Movie;
 import storm.starter.trident.octorater.models.Word;
 
@@ -31,7 +36,27 @@ import storm.starter.trident.octorater.models.Word;
  */
 @SuppressWarnings("deprecation")
 public class Utils {
-	
+
+	static {
+		File file = new File(Constants.OUTPUT_FILE_PATH);
+		if (!file.exists()) {
+			try {
+				file.getParentFile().mkdirs();
+				file.createNewFile();
+			} catch (IOException e) {
+				System.err.println("Unable to create a new file " + e.getMessage());
+			}
+		} else {
+			PrintWriter writer;
+			try {
+				writer = new PrintWriter(file);
+				writer.print("");
+				writer.close();
+			} catch (FileNotFoundException e) {
+				System.err.println("Unable to create a new file " + e.getMessage());
+			}
+		}
+	}
 	/***
 	 * Get Stream URL for movie based on a query
 	 * @param query
@@ -231,10 +256,20 @@ public class Utils {
 			return "BAD";
 		} 
 	}
-	
+
+	public static void writeToFile(String string) {
+		try {
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(Constants.OUTPUT_FILE_PATH, true)));
+			out.println(string);
+			out.close();
+		} catch (IOException e) {
+			System.err.println("Failed to write to file " + e.getMessage());
+		}
+	}
 	
 	public static void main(String[] args) {
-		parseWords();
+		//parseWords();
+		System.out.println("Muhaha");
 	}
 	
 }

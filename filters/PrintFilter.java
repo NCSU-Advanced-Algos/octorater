@@ -23,7 +23,7 @@ public class PrintFilter extends BaseFilter {
 	@Override
 	public boolean isKeep(TridentTuple tuple) {
 		Movie movie = (Movie)tuple.get(0);
-		System.out.println(movie.getName() + " is rated as " + Utils.categorizeRating(movie.getRating()));
+		Utils.writeToFile(movie.getName() + " is rated as " + movie.getRating());
 		return true;
 	}
 
