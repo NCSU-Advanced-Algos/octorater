@@ -20,7 +20,6 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
-import org.elasticsearch.search.SearchHit;
 
 import storm.starter.trident.octorater.models.Word;
 import storm.starter.trident.octorater.utilities.Constants;
@@ -210,7 +209,5 @@ public class ElasticDB {
 		elasticDB.dropIndex();
 		elasticDB.createIndex();
 		Utils.parseWords();
-	}
-	
-	
+	}	
 }

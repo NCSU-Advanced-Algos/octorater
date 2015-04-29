@@ -14,19 +14,22 @@ import backtype.storm.tuple.Values;
 @SuppressWarnings("serial")
 public class RateMyMovie extends BaseFunction {
 
-	Movie movie;
-	POSTagger posTagger = new POSTagger();
+	private POSTagger tagger;
+	
+	public RateMyMovie(POSTagger tagger) {
+		this.tagger = tagger;
+	}
 	
 	@Override
 	public void execute(TridentTuple tuple, TridentCollector collector) {
-		movie = (Movie)tuple.get(0);
+		Movie movie = (Movie)tuple.get(0);
 		List<String> comments = new ArrayList<String>();
 		comments = movie.getComments();
 		int count = 0;
 		int commentRating = 0;
 		int movieRating = 0;
 		for(String comment : comments){
-			//commentRating = commentRating + posTagger.evaluate(comment);
+			//commentRating = commentRating + tagger.evaluate(comment);
 			count++;
 		}
 		movieRating = commentRating/count;
