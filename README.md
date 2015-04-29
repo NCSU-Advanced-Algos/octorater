@@ -19,7 +19,7 @@ Rate My Movie implementation in Trident
        <classifier>models</classifier>
   </dependency>
 ```
-* To develop in eclipse, from the package ```storm.starter.trident.octorater``` , copy stanford-postagger.jar to root of the project(storm-starter) and add it to classpath.
+* Run ```mvn package``` in $TRIDENT_SRC
 * Start Coding
 
 #### For ElasticSearch
