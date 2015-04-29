@@ -24,6 +24,7 @@ import org.elasticsearch.search.SearchHit;
 
 import storm.starter.trident.octorater.models.Word;
 import storm.starter.trident.octorater.utilities.Constants;
+import storm.starter.trident.octorater.utilities.POSTagger;
 import storm.starter.trident.octorater.utilities.Utils;
 
 
@@ -170,17 +171,24 @@ public class ElasticDB {
 	public void updateWord(String wordName, Float delta){
 		Word word = getWord(wordName);
 		if (word == null) {
-			// TODO - Handle case if word does not exist.
-			// My suggestion is to add the word to DB with the default value(say 60) and then update
-			// it gradually
+			// If word not found create default word.
+			word = new Word();
+			word.setName(wordName);
+			word.setTag(POSTagger.getTag(wordName));
+			word.setScore(Constants.DEFAULT);
 			return;
 		}
 		Client client = createClient();
 		UpdateRequest request = new UpdateRequest(Constants.DB_INDEX, Constants.DB_TYPE, word.getID());
 		try {
+			float updatedScore = word.getScore() + delta;
+			if (updatedScore > 95)
+				updatedScore = 95;
+			else if (updatedScore < 5)
+				updatedScore = 5;
 			request.doc(XContentFactory.jsonBuilder()
 					.startObject()
-						.field("score", word.getScore()+delta)
+						.field("score", updatedScore)
 					.endObject());
 			client.update(request).get();
 			closeClient(client);

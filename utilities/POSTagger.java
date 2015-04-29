@@ -41,7 +41,7 @@ public class POSTagger {
     }
 
     public static String getTag(String word) {
-    	return getTagger().tagString(word).split("/")[1];
+    	return getTagger().tagString(word).split(Constants.TAG_SEPERATOR)[1];
     }
     
     public void addToTagger(String element){
@@ -61,6 +61,6 @@ public class POSTagger {
     
     public static void main(String args[]){
         POSTagger p = new POSTagger();
-        p.addToTagger("Kapil");
+        p.addToTagger("Kapil");	
     }
 }

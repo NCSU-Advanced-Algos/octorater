@@ -21,6 +21,7 @@ public class Constants {
 	public static final String DB_TYPE = "words";
 	public static final float BEST = 80;
 	public static final float GOOD = 60;
+	public static final float DEFAULT = 50;
 	public static final float AVERAGE = 40;
 	public static final float BAD = 20;
 	public static final String WEAK_SUB = "weaksubj";
@@ -33,4 +34,5 @@ public class Constants {
 					"JJ", "JJR", "JJS", "RB", "RBR", "RBS"
 					,"VB", "VBD", "VBG", "VBN", "VBP", "VBZ"}
 			));
+	public static final String TAG_SEPERATOR="_";
 }
