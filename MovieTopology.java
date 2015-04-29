@@ -27,8 +27,10 @@ public class MovieTopology {
 		IBatchSpout rottenSpout = new RottenSpout("e", API_KEY);
 		POSTagger tagger = new POSTagger();
 		RateMyMovie movieRater = new RateMyMovie(tagger);
+		PrintFilter printFilter = new PrintFilter();
 		topology.newStream("rotten", rottenSpout)
-				.each(new Fields("text"), new PrintFilter());
+				.each(new Fields("movie"), movieRater, new Fields("updatedMovie"))
+				.each(new Fields("updatedMovie"), printFilter);
 		return topology.build();
 	}
 	
@@ -38,7 +40,7 @@ public class MovieTopology {
     	conf.setMaxSpoutPending( 10 );
     	LocalCluster cluster = new LocalCluster();
     	LocalDRPC drpc = new LocalDRPC();
-    	cluster.submitTopology("get_count",conf,buildTopology(drpc));
+    	cluster.submitTopology("rotten",conf,buildTopology(drpc));
     	System.out.println("STATUS: OK");
 	}
 }

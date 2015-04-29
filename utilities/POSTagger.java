@@ -17,31 +17,31 @@ package storm.starter.trident.octorater.utilities;
 
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.PriorityQueue;
+import java.util.Map;
 import storm.starter.trident.octorater.db.ElasticDB;
 import storm.starter.trident.octorater.models.Word;
 /**
  *
  * @author shubham
  */
-public class POSTagger {
+public class POSTagger implements Serializable{
     String comment;
-    PriorityQueue<String> priQueue;
-   // int k=Integer.MAX_VALUE;
     private static MaxentTagger tagger;
-    ElasticDB eDB;
+    private ElasticDB eDB;
+    private Map<String, Float> fbWords;
     
     public POSTagger() {
         eDB = new ElasticDB();
+        fbWords = new HashMap<String, Float>();
     }
     
     public static MaxentTagger getTagger() {
     	if (tagger == null) {
             tagger = new MaxentTagger("data/english-left3words-distsim.tagger");
-			
     	}
     	return tagger;
     }
@@ -50,49 +50,63 @@ public class POSTagger {
     	return getTagger().tagString(word).split(Constants.TAG_SEPERATOR)[1];
     }
     
-    public String[] addToTagger(String element){
-        
-    	return getTagger().tagString(element).split(" ");
-        
-        
+    
+    public List<String> getWords(String sentence){
+    	List<String> validWords = new ArrayList<String>();
+    	for (String word : getTagger().tagString(sentence).split(" ")) {
+    		if (Constants.ValidTags.contains(getTag(word))) {
+    			validWords.add(word.split("_")[0]);
+    		}
+    	}
+    	return validWords;
     }
     
-    public float evaluate(String sentence) {
-        
-        String words[] = addToTagger(sentence);
-        
+    public float evaluate(String sentence, float movieScore) {
+        List<String> words = getWords(sentence);
         float score = 0;
         int count = 0;
-        
+        Word w;
         for(String word: words) {       
-            if( Constants.ValidTags.contains(getTag(word))) {
-                Word w = eDB.getWord(word);
-                if(w != null) {
-                    score += w.getScore();
-                    count++;
-                }
+            w = eDB.getWord(word);
+            if(w == null) {
+            	updateMap(fbWords, word, 0f);
+            	continue;
             }
+            score += w.getScore();
+            count++;
+            int wordRank = Utils.getRank(w.getScore());
+            int oracleRank = Utils.getRank(movieScore);
+            if (wordRank > oracleRank) {
+            	updateMap(fbWords, word, Constants.DELTA);
+            } else if (wordRank < oracleRank) {
+				updateMap(fbWords, word, -Constants.DELTA);
+			}
         }
-        
         if(count > 0) {
             score = score/count;
         }
-        
         return score;
     }
     
-    public List<String> printTopK(int k){
-        List<String> ls = new ArrayList<String>();
-        Iterator<String> iter = priQueue.iterator();
-        while(iter.hasNext() && k>=1){
-            ls.add(iter.next());
-            k--;
-        }
-        return ls;
+    private void updateMap(Map<String, Float> map, String wordName, float delta) {
+    	if (map.get(wordName) == null ){
+    		map.put(wordName, delta);
+    		return;
+    	}
+    	map.put(wordName, map.get(wordName)+ delta);
     }
     
+    public void feedback() {
+		if (fbWords.keySet().size() < Constants.FEEDBACK_THRESHOLD) {
+			return;
+		}
+		for (String word : fbWords.keySet()) {
+			eDB.updateWord(word, fbWords.get(word));
+		}
+		fbWords = new HashMap<String, Float>();
+	}
+    
     public static void main(String args[]){
-        POSTagger p = new POSTagger();
-        p.addToTagger("It was an excellent movie");	
+       System.out.println(getTagger().tagString("I am George. I am an engineer. Muhahaha"));	
     }
 }

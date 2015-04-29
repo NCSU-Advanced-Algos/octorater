@@ -21,15 +21,15 @@ public class Movie implements Serializable {
 	
 	private String name;
 	private String id;
-	private int rating;
-	private int score;
+	private float rating;
+	private float score;
 	private List<String> comments;
 	
 	public Movie(String id) {
 		this.id = id;
 	}
 	
-	public Movie(String id, String name, int score) {
+	public Movie(String id, String name, float score) {
 		this(id);
 		this.name = name;
 		this.score = score;
@@ -52,19 +52,19 @@ public class Movie implements Serializable {
 		this.id = id;
 	}
 
-	public int getRating() {
+	public float getRating() {
 		return rating;
 	}
 
-	public void setRating(int rating) {
+	public void setRating(float rating) {
 		this.rating = rating;
 	}
 
-	public int getScore() {
+	public float getScore() {
 		return score;
 	}
 
-	public void setScore(int score) {
+	public void setScore(float score) {
 		this.score = score;
 	}
 

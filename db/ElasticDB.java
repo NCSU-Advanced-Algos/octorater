@@ -1,6 +1,7 @@
 package storm.starter.trident.octorater.db;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -15,6 +16,8 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -34,7 +37,7 @@ import storm.starter.trident.octorater.utilities.Utils;
  *	Kumar Utsav	  (kutsav),
  *	Shubham Bhawsinka (sbhawsi)
  */
-public class ElasticDB {
+public class ElasticDB implements Serializable{
 	
 	/***
 	 * Static Method to create client
@@ -42,6 +45,7 @@ public class ElasticDB {
 	 */
 	@SuppressWarnings("resource")
 	public Client createClient() {
+		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
 		return client;
 	}
@@ -59,6 +63,7 @@ public class ElasticDB {
 	 * @return
 	 */
 	public Node createNode() {
+		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 		Node node = NodeBuilder.nodeBuilder().client(true).node();
 		return node;
 	}
@@ -174,7 +179,8 @@ public class ElasticDB {
 			word = new Word();
 			word.setName(wordName);
 			word.setTag(POSTagger.getTag(wordName));
-			word.setScore(Constants.DEFAULT);
+			word.setScore(Constants.DEFAULT + delta);
+			addWord(word);
 			return;
 		}
 		Client client = createClient();

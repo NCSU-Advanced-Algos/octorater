@@ -26,14 +26,15 @@ public class RateMyMovie extends BaseFunction {
 		List<String> comments = new ArrayList<String>();
 		comments = movie.getComments();
 		int count = 0;
-		int commentRating = 0;
-		int movieRating = 0;
+		float commentRating = 0;
+		float movieRating = 0;
 		for(String comment : comments){
-			commentRating += tagger.evaluate(comment);
+			commentRating += tagger.evaluate(comment, movie.getScore());
 			count++;
 		}
 		movieRating = commentRating/count;
 		movie.setRating(movieRating);
+		tagger.feedback();
 		collector.emit(new Values(movie));
 	}
 }

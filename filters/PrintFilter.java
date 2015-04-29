@@ -4,6 +4,7 @@
 package storm.starter.trident.octorater.filters;
 
 import storm.starter.trident.octorater.models.Movie;
+import storm.starter.trident.octorater.utilities.Utils;
 import storm.trident.operation.BaseFilter;
 import storm.trident.tuple.TridentTuple;
 
@@ -22,7 +23,7 @@ public class PrintFilter extends BaseFilter {
 	@Override
 	public boolean isKeep(TridentTuple tuple) {
 		Movie movie = (Movie)tuple.get(0);
-		System.out.println(movie);
+		System.out.println(movie.getName() + " is rated as " + Utils.categorizeRating(movie.getRating()));
 		return true;
 	}
 

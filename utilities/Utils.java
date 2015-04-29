@@ -202,6 +202,37 @@ public class Utils {
 		}
 		return words;
 	}
+	
+	/**
+	 * 
+	 * @param score
+	 * @return
+	 */
+	public static int getRank(float score) {
+		if (score >= Constants.BEST) {
+			return 4;
+		} else if (score >= Constants.GOOD) {
+			return 3;
+		} else if (score >= Constants.AVERAGE) {
+			return 2;
+		} else {
+			return 1;
+		} 
+	}
+	
+	public static String categorizeRating(float rating) {
+		if (rating >= Constants.BEST) {
+			return "VERY GOOD";
+		} else if (rating >= Constants.GOOD) {
+			return "GOOD";
+		} else if (rating >= Constants.AVERAGE) {
+			return "AVERAGE";
+		} else {
+			return "BAD";
+		} 
+	}
+	
+	
 	public static void main(String[] args) {
 		parseWords();
 	}

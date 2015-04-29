@@ -33,4 +33,6 @@ public class Constants {
 					,"VB", "VBD", "VBG", "VBN", "VBP", "VBZ"}
 			));
 	public static final String TAG_SEPERATOR="_";
+	public static final float DELTA = 1f;
+	public static final int FEEDBACK_THRESHOLD = 100;
 }

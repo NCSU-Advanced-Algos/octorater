@@ -87,7 +87,7 @@ public class RottenSpout implements IBatchSpout {
 
 	@Override
 	public Fields getOutputFields() {
-		return new Fields("text");
+		return new Fields("movie");
 	}
 	
 	private void fetchMovies() {
