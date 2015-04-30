@@ -20,8 +20,11 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import storm.starter.trident.octorater.db.ElasticDB;
 import storm.starter.trident.octorater.models.Word;
 /**
@@ -33,10 +36,12 @@ public class POSTagger implements Serializable{
     private static MaxentTagger tagger;
     private ElasticDB eDB;
     private Map<String, Float> fbWords;
+    private TFIDF tfidf;
     
     public POSTagger() {
         eDB = new ElasticDB();
         fbWords = new HashMap<String, Float>();
+        tfidf = new TFIDF();
     }
     
     public static MaxentTagger getTagger() {
@@ -51,8 +56,8 @@ public class POSTagger implements Serializable{
     }
     
     
-    public List<String> getWords(String sentence){
-    	List<String> validWords = new ArrayList<String>();
+    public Set<String> getWords(String sentence){
+    	Set<String> validWords = new HashSet<String>();
     	for (String word : getTagger().tagString(sentence).split(" ")) {
     		if (Constants.ValidTags.contains(getTag(word))) {
     			validWords.add(word.split("_")[0].toLowerCase());
@@ -62,18 +67,21 @@ public class POSTagger implements Serializable{
     }
     
     public float evaluate(String sentence, float movieScore) {
-        List<String> words = getWords(sentence);
+        Set<String> words = getWords(sentence);
         float score = 0;
-        int count = 0;
+        float sum_wt = 0;
         Word w;
+        float tfIdf_score;
         for(String word: words) {       
             w = eDB.getWord(word);
+            tfIdf_score = TFIDF.tfidf(word, sentence);
             if(w == null) {
             	updateMap(fbWords, word, 0f);
+            	tfidf.update(word, 1);
             	continue;
             }
-            score += w.getScore();
-            count++;
+            score += tfIdf_score * w.getScore();
+            sum_wt += tfIdf_score;
             int wordRank = Utils.getRank(w.getScore());
             int oracleRank = Utils.getRank(movieScore);
             if (wordRank > oracleRank) {
@@ -81,10 +89,12 @@ public class POSTagger implements Serializable{
             } else if (wordRank < oracleRank) {
 				updateMap(fbWords, word, -Constants.DELTA);
 			}
+            tfidf.update(word, 1);
         }
-        if(count > 0) {
-            score = score/count;
+        if(sum_wt > 0) {
+            score = score/sum_wt;
         }
+        tfidf.incrementDoc();
         return score;
     }
     
@@ -100,10 +110,13 @@ public class POSTagger implements Serializable{
 		if (fbWords.keySet().size() < Constants.FEEDBACK_THRESHOLD) {
 			return;
 		}
+		Utils.writeToFile("******* UPDATING WORDS *********");
 		for (String word : fbWords.keySet()) {
 			eDB.updateWord(word, fbWords.get(word));
 		}
+		Utils.writeToFile("******* END UPDATING WORDS *********");
 		fbWords = new HashMap<String, Float>();
+		tfidf.updateDB();
 	}
     
     public static void main(String args[]){

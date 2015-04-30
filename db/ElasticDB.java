@@ -2,6 +2,7 @@ package storm.starter.trident.octorater.db;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -11,6 +12,7 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -19,6 +21,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
@@ -27,6 +30,7 @@ import org.elasticsearch.node.NodeBuilder;
 import storm.starter.trident.octorater.models.Word;
 import storm.starter.trident.octorater.utilities.Constants;
 import storm.starter.trident.octorater.utilities.POSTagger;
+import storm.starter.trident.octorater.utilities.TFIDF;
 import storm.starter.trident.octorater.utilities.Utils;
 
 
@@ -43,6 +47,8 @@ public class ElasticDB implements Serializable{
 	 * Static Method to create client
 	 * @return
 	 */
+	private static Node node; 
+	
 	@SuppressWarnings("resource")
 	public Client createClient() {
 		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
@@ -62,15 +68,14 @@ public class ElasticDB implements Serializable{
 	 * Create a Node for connection
 	 * @return
 	 */
-	public Node createNode() {
-		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
-		Node node = NodeBuilder.nodeBuilder().client(true).node();
+	public static Node createNode() {
+		if (node == null) {
+			ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
+			node = NodeBuilder.nodeBuilder().client(true).node();
+		}
 		return node;
 	}
 	
-	public void closeNode(Node node) {
-		node.close();
-	}
 	
 	/***
 	 * Create An Index to store words
@@ -139,7 +144,7 @@ public class ElasticDB implements Serializable{
 	       }
 	       bulkBuilder = client.prepareBulk();
 	    }
-		closeNode(node);
+		closeClient(client);
 	}
 	
 	/***
@@ -178,7 +183,7 @@ public class ElasticDB implements Serializable{
 			// If word not found create default word.
 			word = new Word();
 			word.setName(wordName);
-			word.setTag(POSTagger.getTag(wordName));
+			word.setTag(POSTagger.getTag(wordName).trim());
 			word.setScore(Constants.DEFAULT + delta);
 			addWord(word);
 			return;
@@ -208,12 +213,140 @@ public class ElasticDB implements Serializable{
 			System.err.println("Error occured while updating word. Error : " + e.getMessage());
 		}
 	}
+	/***
+	 * 
+	 * @return
+	 */
+	public Integer getTotalDocs(){
+		Node node = createNode();
+		Client client = node.client();
+		GetResponse getResponse = client.prepareGet(
+				Constants.DB_INDEX,
+				Constants.TOTAL_DOCUMENT_TYPE,
+				Constants.TOTAL_DOCUMENT_ID).execute().actionGet();
+		if (getResponse == null || getResponse.getSource() == null) {
+			return null;
+		}
+		closeClient(client);
+		return Integer.parseInt(getResponse.getSource().get("score").toString());
+	}
 	
+	/***
+	 * 
+	 * @param documents
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void updateTotalDocs(int documents) {
+		Node node = createNode();
+		Client client = node.client();
+		Integer totalDocs =  getTotalDocs();
+		try {
+		if (totalDocs == null) {
+			Map docMap = new HashMap();
+			docMap.put("score",documents);
+			IndexRequest indexRequest = new IndexRequest(
+					Constants.DB_INDEX,
+					Constants.TOTAL_DOCUMENT_TYPE, 
+					Constants.TOTAL_DOCUMENT_ID)
+	        .source(docMap);
+			client.index(indexRequest).actionGet();
+		} else {
+			UpdateRequest updateRequest;
+			
+				updateRequest = new UpdateRequest(
+						Constants.DB_INDEX,
+						Constants.TOTAL_DOCUMENT_TYPE, 
+						Constants.TOTAL_DOCUMENT_ID)
+						.doc(XContentFactory.jsonBuilder()
+								.startObject()
+									.field("score", totalDocs+documents)
+								.endObject());
+			client.update(updateRequest).get();
+		}
+		} catch (IOException | InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+			System.out.println("Exception occured while updating total document count " + e.getMessage());
+		} finally{
+			closeClient(client);
+		}
+		
+	}	
+	
+	public Word getWordDocFrequency(String wordName){
+		Node node = createNode();
+		Client client = node.client();
+		GetResponse getResponse = client.prepareGet(
+				Constants.DB_INDEX,
+				Constants.WORD_DOC_FREQ_TYPE,
+				wordName).execute().actionGet();
+		if (getResponse == null || getResponse.getSource() == null) {
+			return null;
+		}
+		closeClient(client);
+		Word word = new Word();
+		word.setName(wordName);
+		word.setDocCount(Integer.parseInt(getResponse.getSource().get("count").toString()));
+		return word;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void bulkUpdateWordDocFrequency(Map<String, Integer> wordFreq, boolean onlyInsert){
+		Node node = createNode();
+		Client client = node.client();
+		BulkRequestBuilder bulkBuilder = client.prepareBulk();
+		int bulkSize = 0;
+		Map wordFreqMap;
+		Word word;
+		for (String wordName: wordFreq.keySet()) {
+			wordFreqMap = new HashMap();
+			// Hack for faster inserts first time
+			if (onlyInsert) {
+				word = null;
+			} else {
+				word = getWordDocFrequency(wordName);
+			}
+			if (word == null) {
+				// INSERT
+				wordFreqMap.put("count", wordFreq.get(wordName));
+				bulkBuilder.add(client.prepareIndex(
+						Constants.DB_INDEX,
+						Constants.WORD_DOC_FREQ_TYPE,
+						wordName).setSource(wordFreqMap));
+			} else {
+				// UPDATE
+				wordFreqMap.put("count", word.getDocCount() + wordFreq.get(wordName));
+				bulkBuilder.add(client.prepareUpdate(
+						Constants.DB_INDEX,
+						Constants.WORD_DOC_FREQ_TYPE,
+						wordName).setDoc(wordFreqMap));
+			}
+			
+			bulkSize++;
+			if (bulkSize % 1000 == 0) {
+				System.out.println("Adding Word Doc Frequency Batch");
+				BulkResponse response = bulkBuilder.execute().actionGet();
+				if (response.hasFailures()) {
+					System.err.println("Error occured whilst adding bulk word document frequencies " + response.buildFailureMessage());
+				}
+				bulkBuilder = client.prepareBulk();
+			}
+		}
+		if(bulkBuilder.numberOfActions() > 0){
+	       BulkResponse bulkRes = bulkBuilder.execute().actionGet();
+	       if(bulkRes.hasFailures()){
+	          System.err.println("##### Bulk Request failure with error: " +   bulkRes.buildFailureMessage());
+	       }
+	       bulkBuilder = client.prepareBulk();
+	    }
+		closeClient(client);
+	}
 	
 	public static void main(String[] args) {
 		ElasticDB elasticDB = new ElasticDB();
 		elasticDB.dropIndex();
 		elasticDB.createIndex();
 		Utils.parseWords();
-	}	
+		TFIDF.buildWordMap(true);
+		System.exit(1);
+	}
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import storm.starter.trident.octorater.models.Movie;
+import storm.starter.trident.octorater.utilities.Constants;
 import storm.starter.trident.octorater.utilities.POSTagger;
 import storm.starter.trident.octorater.utilities.Utils;
 import storm.trident.operation.BaseFunction;
@@ -33,12 +34,16 @@ public class RateMyMovie extends BaseFunction {
 		List<Float> scores = new ArrayList<Float>();
 		for(String comment : comments){
 			score = tagger.evaluate(comment, movie.getScore());
+			if (score <= Constants.MIN_THRESHOLD) {
+				continue;
+			}
 			scores.add(score);
 			commentRating += score;
 			count++;
 		}
 		Utils.writeToFile("Actual Score = " + movie.getScore());
 		Utils.writeToFile(scores);
+		Utils.writeToFile("Median Score = " + Utils.median(scores));
 		movieRating = commentRating/count;
 		movie.setRating(movieRating);
 		tagger.feedback();

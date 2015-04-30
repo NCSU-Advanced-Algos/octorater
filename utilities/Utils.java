@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.storm.http.HttpResponse;
@@ -266,6 +267,17 @@ public class Utils {
 			out.close();
 		} catch (IOException e) {
 			System.err.println("Failed to write to file " + e.getMessage());
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static float median(List lst) {
+		Collections.sort(lst);
+		int size = lst.size();
+		if (size % 2 == 1){
+			return (float) lst.get(size/2);
+		} else {
+			return (float) (((float) lst.get(size/2) + (float) lst.get(size/2 + 1))/2.0);
 		}
 	}
 	

@@ -30,11 +30,17 @@ public class Constants {
 	public static Set<String> ValidTags = new HashSet<String>(
 			Arrays.asList(new String[]{
 					"JJ", "JJR", "JJS", "RB", "RBR", "RBS"
-					,"VB", "VBD", "VBG", "VBN", "VBP", "VBZ"}
+					,"VB", "VBD", "VBG", "VBN", "VBP", "VBZ"
+					,"NN" , "NNS"}
 			));
 	public static final String TAG_SEPERATOR="_";
 	public static final float DELTA = 1f;
 	public static final int FEEDBACK_THRESHOLD = 100;
 	public static final String OUTPUT_FILE_PATH = "results/result.txt";
 	public static final int CURRENT_YEAR = 2015;
+	public static final String REVIEWS_PATH = "data/reviews.txt";
+	public static final String TOTAL_DOCUMENT_TYPE = "totalDocs";
+	public static final String TOTAL_DOCUMENT_ID = "total";
+	public static final String WORD_DOC_FREQ_TYPE = "wordDocFreq";
+	public static final int MIN_THRESHOLD = 5;
 }

@@ -23,6 +23,8 @@ public class Word implements Serializable {
 	
 	private float score;
 	
+	private int docCount;
+	
 	private String _id;
 	
 	
@@ -49,15 +51,23 @@ public class Word implements Serializable {
 	public void setScore(float score) {
 		this.score = score;
 	}
-
-	public void setID(String _id){
-		this._id = _id;
-	}
 	
 	public String getID() {
 		return _id;
 	}
 	
+	public void setID(String _id){
+		this._id = _id;
+	}
+	
+	public int getDocCount() {
+		return docCount;
+	}
+
+	public void setDocCount(int docCount) {
+		this.docCount = docCount;
+	}
+
 	@Override
 	public String toString() {
 		return "Word [name=" + name + ", tag=" + tag + ", score=" + score + "]";
