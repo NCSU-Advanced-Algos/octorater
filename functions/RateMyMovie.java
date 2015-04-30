@@ -5,6 +5,7 @@ import java.util.List;
 
 import storm.starter.trident.octorater.models.Movie;
 import storm.starter.trident.octorater.utilities.POSTagger;
+import storm.starter.trident.octorater.utilities.Utils;
 import storm.trident.operation.BaseFunction;
 import storm.trident.operation.TridentCollector;
 import storm.trident.tuple.TridentTuple;
@@ -28,10 +29,16 @@ public class RateMyMovie extends BaseFunction {
 		int count = 0;
 		float commentRating = 0;
 		float movieRating = 0;
+		float score;
+		List<Float> scores = new ArrayList<Float>();
 		for(String comment : comments){
-			commentRating += tagger.evaluate(comment, movie.getScore());
+			score = tagger.evaluate(comment, movie.getScore());
+			scores.add(score);
+			commentRating += score;
 			count++;
 		}
+		Utils.writeToFile("Actual Score = " + movie.getScore());
+		Utils.writeToFile(scores);
 		movieRating = commentRating/count;
 		movie.setRating(movieRating);
 		tagger.feedback();

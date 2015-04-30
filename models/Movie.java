@@ -24,6 +24,9 @@ public class Movie implements Serializable {
 	private float rating;
 	private float score;
 	private List<String> comments;
+	private int releaseYear;
+	private int positives = 0;
+	private int negatives = 0;
 	
 	public Movie(String id) {
 		this.id = id;
@@ -76,6 +79,30 @@ public class Movie implements Serializable {
 		this.comments = comments;
 	}
 	
+	public int getReleaseYear() {
+		return releaseYear;
+	}
+
+	public void setReleaseYear(int releaseYear) {
+		this.releaseYear = releaseYear;
+	}
+
+	public int getPositives() {
+		return positives;
+	}
+
+	public void setPositives(int positives) {
+		this.positives = positives;
+	}
+
+	public int getNegatives() {
+		return negatives;
+	}
+
+	public void setNegatives(int negatives) {
+		this.negatives = negatives;
+	}
+
 	public void addComment(String comment){
 		if (this.comments == null)
 			this.comments = new ArrayList<String>();
@@ -84,7 +111,15 @@ public class Movie implements Serializable {
 	
 	public static Movie makeMovie(JSONObject movieJSON) {
 		try {
-			Movie movie = new Movie(movieJSON.get("id").toString(), movieJSON.get("title").toString(), Integer.parseInt(((JSONObject)movieJSON.get("ratings")).get("audience_score").toString()));
+			Movie movie = new Movie(movieJSON.get("id").toString());
+			movie.setName(movieJSON.get("title").toString());
+			JSONObject ratings = (JSONObject)movieJSON.get("ratings");
+			if (Integer.parseInt(ratings.get("critics_score").toString()) > 0) {
+				movie.setScore(Integer.parseInt(ratings.get("critics_score").toString()));
+			} else {
+				movie.setScore(Integer.parseInt(ratings.get("audience_score").toString()));
+			}
+			movie.setReleaseYear(Integer.parseInt(movieJSON.get("year").toString()));
 			return movie;
 		} catch (Exception e) {
 			e.printStackTrace();

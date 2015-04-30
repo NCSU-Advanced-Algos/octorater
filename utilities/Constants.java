@@ -17,11 +17,11 @@ import java.util.Set;
 public class Constants {
 	public static final String DB_INDEX = "rotten";
 	public static final String DB_TYPE = "words";
-	public static final float BEST = 80;
-	public static final float GOOD = 60;
+	public static final float BEST = 90;
+	public static final float GOOD = 80;
 	public static final float DEFAULT = 50;
-	public static final float AVERAGE = 40;
-	public static final float BAD = 20;
+	public static final float AVERAGE = 20;
+	public static final float BAD = 10;
 	public static final String WEAK_SUB = "weaksubj";
 	public static final String STRONG_SUB = "strongsubj";
 	public static final String POSITIVE = "positive";
@@ -36,4 +36,5 @@ public class Constants {
 	public static final float DELTA = 1f;
 	public static final int FEEDBACK_THRESHOLD = 100;
 	public static final String OUTPUT_FILE_PATH = "results/result.txt";
+	public static final int CURRENT_YEAR = 2015;
 }

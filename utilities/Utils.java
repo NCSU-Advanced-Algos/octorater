@@ -172,8 +172,10 @@ public class Utils {
 			Movie movie;
 			for (Object movieObj: moviesJSON) {
 				movie = Movie.makeMovie((JSONObject)movieObj);
+				if (movie.getReleaseYear() >= Constants.CURRENT_YEAR)
+					continue;
 				updateReviews(movie, 25, apiKey);
-				if (movie.getComments().size() > 0)
+				if (movie.getComments().size() > 0 )
 					movies.add(movie);
 			}
 		} catch (Exception e) {
@@ -257,10 +259,10 @@ public class Utils {
 		} 
 	}
 
-	public static void writeToFile(String string) {
+	public static void writeToFile(Object word) {
 		try {
 			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(Constants.OUTPUT_FILE_PATH, true)));
-			out.println(string);
+			out.println(word.toString());
 			out.close();
 		} catch (IOException e) {
 			System.err.println("Failed to write to file " + e.getMessage());
@@ -268,8 +270,7 @@ public class Utils {
 	}
 	
 	public static void main(String[] args) {
-		//parseWords();
-		System.out.println("Muhaha");
+		System.out.println(getMovieStreamURL("e", 2, 1, "qynq4687htc3z7mq2ec7y67x"));
 	}
 	
 }
