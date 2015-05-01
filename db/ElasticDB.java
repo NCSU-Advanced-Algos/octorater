@@ -241,35 +241,40 @@ public class ElasticDB implements Serializable{
 		Client client = node.client();
 		Integer totalDocs =  getTotalDocs();
 		try {
-		if (totalDocs == null) {
-			Map docMap = new HashMap();
-			docMap.put("score",documents);
-			IndexRequest indexRequest = new IndexRequest(
-					Constants.DB_INDEX,
-					Constants.TOTAL_DOCUMENT_TYPE, 
-					Constants.TOTAL_DOCUMENT_ID)
-	        .source(docMap);
-			client.index(indexRequest).actionGet();
-		} else {
-			UpdateRequest updateRequest;
-			
-				updateRequest = new UpdateRequest(
+			if (totalDocs == null) {
+				Map docMap = new HashMap();
+				docMap.put("score",documents);
+				IndexRequest indexRequest = new IndexRequest(
 						Constants.DB_INDEX,
 						Constants.TOTAL_DOCUMENT_TYPE, 
 						Constants.TOTAL_DOCUMENT_ID)
-						.doc(XContentFactory.jsonBuilder()
-								.startObject()
-									.field("score", totalDocs+documents)
-								.endObject());
-			client.update(updateRequest).get();
-		}
-		} catch (IOException | InterruptedException | ExecutionException e) {
+		        .source(docMap);
+				client.index(indexRequest).actionGet();
+			} else {
+				UpdateRequest updateRequest;
+				
+					updateRequest = new UpdateRequest(
+							Constants.DB_INDEX,
+							Constants.TOTAL_DOCUMENT_TYPE, 
+							Constants.TOTAL_DOCUMENT_ID)
+							.doc(XContentFactory.jsonBuilder()
+									.startObject()
+										.field("score", totalDocs+documents)
+									.endObject());
+				client.update(updateRequest).get();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Exception occured while updating total document count " + e.getMessage());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			System.out.println("Exception occured while updating total document count " + e.getMessage());
+		} catch (ExecutionException e) {
 			e.printStackTrace();
 			System.out.println("Exception occured while updating total document count " + e.getMessage());
 		} finally{
 			closeClient(client);
 		}
-		
 	}	
 	
 	public Word getWordDocFrequency(String wordName){

@@ -34,7 +34,7 @@ public class RottenSpout implements IBatchSpout {
 	private int pageNumber;
 	private boolean loopOn;
 	private final static int MOVIES_PER_PAGE = 10;
-	private final static int RECORDS_PER_BATCH = 5;
+	private final static int RECORDS_PER_BATCH = 2;
 	
 	public RottenSpout(String query, String apiKey) {
 		this.apiKey = apiKey;

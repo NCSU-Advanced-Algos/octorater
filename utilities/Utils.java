@@ -23,7 +23,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import storm.starter.trident.octorater.db.ElasticDB;
-import storm.starter.trident.octorater.filters.PrintFilter;
 import storm.starter.trident.octorater.models.Movie;
 import storm.starter.trident.octorater.models.Word;
 
@@ -270,8 +269,7 @@ public class Utils {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static float median(List lst) {
+	public static float median(List<Float> lst) {
 		Collections.sort(lst);
 		int size = lst.size();
 		if (size % 2 == 1){
@@ -279,6 +277,16 @@ public class Utils {
 		} else {
 			return (float) (((float) lst.get(size/2) + (float) lst.get(size/2 + 1))/2.0);
 		}
+	}
+	
+	public static void printMovie(Movie movie) {
+		int pos = movie.getPositives();
+		int neg = movie.getNegatives();
+		int total = pos + neg;
+		Utils.writeToFile(movie.getName() + " : ");
+		Utils.writeToFile(pos + " out of " + total + " rated the movie as positive.");
+		Utils.writeToFile(neg + " out of " + total + " rated the movie as negative.");
+		Utils.writeToFile(" ");
 	}
 	
 	public static void main(String[] args) {

@@ -13,9 +13,13 @@ import storm.trident.tuple.TridentTuple;
 import backtype.storm.tuple.Values;
 
 // this function is used to convert the words into their lower cased form.
-@SuppressWarnings("serial")
 public class RateMyMovie extends BaseFunction {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3066944687705357971L;
+	
 	private POSTagger tagger;
 	
 	public RateMyMovie(POSTagger tagger) {
@@ -31,22 +35,27 @@ public class RateMyMovie extends BaseFunction {
 		float commentRating = 0;
 		float movieRating = 0;
 		float score;
-		List<Float> scores = new ArrayList<Float>();
+		int positiveComment = 0;
+		int negativeComment = 0;
 		for(String comment : comments){
 			score = tagger.evaluate(comment, movie.getScore());
 			if (score <= Constants.MIN_THRESHOLD) {
 				continue;
 			}
-			scores.add(score);
+			if (score > Constants.SCORE_THRESHOLD) {
+				positiveComment++;
+			} else {
+				negativeComment++;
+			}
 			commentRating += score;
 			count++;
 		}
-		Utils.writeToFile("Actual Score = " + movie.getScore());
-		Utils.writeToFile(scores);
-		Utils.writeToFile("Median Score = " + Utils.median(scores));
 		movieRating = commentRating/count;
 		movie.setRating(movieRating);
+		movie.setPositives(positiveComment);
+		movie.setNegatives(negativeComment);
 		tagger.feedback();
+		//Utils.printMovie(movie);
 		collector.emit(new Values(movie));
 	}
 }

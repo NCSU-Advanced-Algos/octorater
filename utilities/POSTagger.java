@@ -18,10 +18,8 @@ package storm.starter.trident.octorater.utilities;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,7 +30,11 @@ import storm.starter.trident.octorater.models.Word;
  * @author shubham
  */
 public class POSTagger implements Serializable{
-    String comment;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6164064082754267628L;
+	String comment;
     private static MaxentTagger tagger;
     private ElasticDB eDB;
     private Map<String, Float> fbWords;

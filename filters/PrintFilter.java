@@ -17,14 +17,24 @@ import storm.trident.tuple.TridentTuple;
  */
 public class PrintFilter extends BaseFilter {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1930891314386410366L;
+
 	/* (non-Javadoc)
 	 * @see storm.trident.operation.Filter#isKeep(storm.trident.tuple.TridentTuple)
 	 */
 	@Override
 	public boolean isKeep(TridentTuple tuple) {
 		Movie movie = (Movie)tuple.get(0);
-		Utils.writeToFile(movie.getName() + " is rated as " + movie.getRating());
-		
+		int pos = movie.getPositives();
+		int neg = movie.getNegatives();
+		int total = pos + neg;
+		Utils.writeToFile(movie.getName() + " : ");
+		Utils.writeToFile(pos + " out of " + total + " rated the movie as positive.");
+		Utils.writeToFile(neg + " out of " + total + " rated the movie as negative.");
+		Utils.writeToFile(" ");
 		return true;
 	}
 
