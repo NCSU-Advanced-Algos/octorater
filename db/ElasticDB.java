@@ -49,12 +49,6 @@ public class ElasticDB implements Serializable{
 	 */
 	private static Node node; 
 	
-	@SuppressWarnings("resource")
-	public Client createClient() {
-		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
-		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
-		return client;
-	}
 	
 	/***
 	 * Close an existing Elastic Search client
@@ -81,7 +75,7 @@ public class ElasticDB implements Serializable{
 	 * Create An Index in elastic search
 	 */
 	public void createIndex() {
-		Client client = createClient();
+		Client client = createNode().client();
 		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate(Constants.DB_INDEX);
 		createIndexRequestBuilder.execute().actionGet();
 		closeClient(client);
@@ -91,7 +85,7 @@ public class ElasticDB implements Serializable{
 	 * Drop the existing index
 	 */
 	public void dropIndex() {
-		Client client = createClient();
+		Client client = createNode().client();
 		try {
 			DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest(Constants.DB_INDEX)).actionGet();
 			if (!delete.isAcknowledged())
@@ -108,7 +102,7 @@ public class ElasticDB implements Serializable{
 	 * @param word
 	 */
 	public void addWord(Word word){
-		Client client = createClient();
+		Client client = createNode().client();
 		IndexRequest indexRequest = new IndexRequest(Constants.DB_INDEX, Constants.DB_TYPE);
 		indexRequest.source(word.toMap());
 		client.index(indexRequest).actionGet();
@@ -154,7 +148,7 @@ public class ElasticDB implements Serializable{
 	 * @return - Word object of that particular word
 	 */
 	public Word getWord(String wordName) {
-		Client client = createClient();
+		Client client = createNode().client();
 		SearchResponse response = client.prepareSearch(Constants.DB_INDEX)
 								.setTypes(Constants.DB_TYPE)
 								.setQuery(QueryBuilders.termQuery("name", wordName))
@@ -189,7 +183,7 @@ public class ElasticDB implements Serializable{
 			addWord(word);
 			return;
 		}
-		Client client = createClient();
+		Client client = createNode().client();
 		UpdateRequest request = new UpdateRequest(Constants.DB_INDEX, Constants.DB_TYPE, word.getID());
 		try {
 			float updatedScore = word.getScore() + delta;
