@@ -54,7 +54,12 @@ public class POSTagger implements Serializable{
     }
 
     public static String getTag(String word) {
-    	return getTagger().tagString(word).split(Constants.TAG_SEPERATOR)[1];
+    	String[] splits = getTagger().tagString(word).split(Constants.TAG_SEPERATOR);
+    	if (splits.length > 1){
+    		return splits[1];
+    	} else {
+    		return null;
+    	}
     }
     
     

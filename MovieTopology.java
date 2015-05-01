@@ -22,9 +22,9 @@ import backtype.storm.tuple.Fields;
 public class MovieTopology {
 	private final static String API_KEY = "qynq4687htc3z7mq2ec7y67x";
 	
-	public static StormTopology buildTopology(LocalDRPC drpc) {
+	public static StormTopology buildTopology(LocalDRPC drpc, String query) {
 		TridentTopology topology = new TridentTopology();
-		IBatchSpout rottenSpout = new RottenSpout("e", API_KEY);
+		IBatchSpout rottenSpout = new RottenSpout(query, API_KEY);
 		POSTagger tagger = new POSTagger();
 		RateMyMovie movieRater = new RateMyMovie(tagger);
 		PrintFilter printFilter = new PrintFilter();
@@ -40,7 +40,7 @@ public class MovieTopology {
     	conf.setMaxSpoutPending( 10 );
     	LocalCluster cluster = new LocalCluster();
     	LocalDRPC drpc = new LocalDRPC();
-    	cluster.submitTopology("rotten",conf,buildTopology(drpc));
+    	cluster.submitTopology("rotten", conf, buildTopology(drpc, args[0]));
     	System.out.println("STATUS: OK");
 	}
 }
