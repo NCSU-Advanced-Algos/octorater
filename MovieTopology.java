@@ -3,6 +3,7 @@ package storm.starter.trident.octorater;
 import storm.starter.trident.octorater.filters.PrintFilter;
 import storm.starter.trident.octorater.functions.RateMyMovie;
 import storm.starter.trident.octorater.spout.RottenSpout;
+import storm.starter.trident.octorater.utilities.Constants;
 import storm.starter.trident.octorater.utilities.POSTagger;
 import storm.trident.TridentTopology;
 import storm.trident.spout.IBatchSpout;
@@ -20,11 +21,16 @@ import backtype.storm.tuple.Fields;
  *	Shubham Bhawsinka (sbhawsi)
  */
 public class MovieTopology {
-	private final static String API_KEY = "qynq4687htc3z7mq2ec7y67x";
-	
+
+	/****
+	 * Method Build Topology to create a storm topolgy
+	 * @param drpc - A DRPC object that can later be used to run drpc queries. Not in implementation now.
+	 * @param query - Query used to stream movies.
+	 * @return - A built topology
+	 */
 	public static StormTopology buildTopology(LocalDRPC drpc, String query) {
 		TridentTopology topology = new TridentTopology();
-		IBatchSpout rottenSpout = new RottenSpout(query, API_KEY);
+		IBatchSpout rottenSpout = new RottenSpout(query, Constants.API_KEY);
 		POSTagger tagger = new POSTagger();
 		RateMyMovie movieRater = new RateMyMovie(tagger);
 		PrintFilter printFilter = new PrintFilter();

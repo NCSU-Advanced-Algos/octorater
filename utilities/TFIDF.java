@@ -27,11 +27,14 @@ import storm.starter.trident.octorater.models.Word;
  */
 public class TFIDF implements Serializable{
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3969018936732030053L;
+	/***
+	 * Map that contains word and number of documents it occurs in.
+	 */
 	private Map<String, Integer> wordMap;
+	/***
+	 * Total number of documents
+	 */
 	private Integer N;
 	
 	public Map<String, Integer> getWordMap() {
@@ -74,7 +77,11 @@ public class TFIDF implements Serializable{
 		return count;
 	}
 	
-	
+	/***
+	 * Read File and create a map of all words and the number of documents it occurs in
+	 * @param updateDB - If true elastic DB will be updated
+	 * @return - A TFIDF object with a map of all words and total doc count
+	 */
 	public static TFIDF buildWordMap(boolean updateDB) {
 		TFIDF tfidf = new TFIDF();
 		POSTagger tagger = new POSTagger();
@@ -112,9 +119,14 @@ public class TFIDF implements Serializable{
 			elasticDB.updateTotalDocs(documents);
 			elasticDB.bulkUpdateWordDocFrequency(tfidf.getWordMap(), true);
 		}
+		tfidf.setN(documents);
 		return tfidf;
 	}
 	
+	/***
+	 * Update Elastic Search for document frequencies.
+	 * Used in feed back.
+	 */
 	public void updateDB(){
 		Utils.writeToFile("******* UPDATING TFIDF *********");
 		ElasticDB elasticDB = new ElasticDB();
@@ -132,17 +144,33 @@ public class TFIDF implements Serializable{
 		}
 		return sb.toString();
 	}
-	
+	/***
+	 * Compute TFIDF score for a word 
+	 * @param word - Word to be considered
+	 * @param sentence - Sentence the word belongs in
+	 * @return - TFIDF weight
+	 */
 	public static float tfidf(String word, String sentence) {
 		return TF(word, sentence)*IDF(word);
 	}
 	
+	/***
+	 * Compute Term Frequency of a word in a sentence 
+	 * @param word
+	 * @param sentence
+	 * @return
+	 */
 	public static int TF(String word, String sentence){
 		sentence = sentence.toLowerCase();
 		List<String> words = Arrays.asList(sentence.split("[\\s.,!?]+"));
 		return Collections.frequency(words, word);
 	}
 	
+	/***
+	 * Retrieve document frequency of a word from elastic search
+	 * @param wordName
+	 * @return
+	 */
 	public static float IDF(String wordName){
 		ElasticDB elasticDB = new ElasticDB();
 		int total = elasticDB.getTotalDocs();

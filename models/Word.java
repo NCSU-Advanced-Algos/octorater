@@ -8,8 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author root
- *
+ * Model Object that holds the Word
+ * @author
+ *  George Mathew (george2),
+ *  Kapil Somani  (kmsomani),
+ *	Kumar Utsav	  (kutsav),
+ *	Shubham Bhawsinka (sbhawsi)
  */
 public class Word implements Serializable {
 	/**

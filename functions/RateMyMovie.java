@@ -6,13 +6,22 @@ import java.util.List;
 import storm.starter.trident.octorater.models.Movie;
 import storm.starter.trident.octorater.utilities.Constants;
 import storm.starter.trident.octorater.utilities.POSTagger;
-import storm.starter.trident.octorater.utilities.Utils;
 import storm.trident.operation.BaseFunction;
 import storm.trident.operation.TridentCollector;
 import storm.trident.tuple.TridentTuple;
 import backtype.storm.tuple.Values;
 
-// this function is used to convert the words into their lower cased form.
+/***
+ * Storm Function that classifies each comment of a movie as
+ * positive or negative based on categorizing each word and
+ * weighing it using TFIDF.
+ * 
+ * @author
+ *  George Mathew (george2),
+ *  Kapil Somani  (kmsomani),
+ *	Kumar Utsav	  (kutsav),
+ *	Shubham Bhawsinka (sbhawsi)
+ */
 public class RateMyMovie extends BaseFunction {
 
 	/**
@@ -55,7 +64,6 @@ public class RateMyMovie extends BaseFunction {
 		movie.setPositives(positiveComment);
 		movie.setNegatives(negativeComment);
 		tagger.feedback();
-		//Utils.printMovie(movie);
 		collector.emit(new Values(movie));
 	}
 }

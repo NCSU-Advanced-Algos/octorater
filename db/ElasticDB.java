@@ -21,7 +21,6 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
@@ -43,6 +42,7 @@ import storm.starter.trident.octorater.utilities.Utils;
  */
 public class ElasticDB implements Serializable{
 	
+	private static final long serialVersionUID = -6045218054015854801L;
 	/***
 	 * Static Method to create client
 	 * @return
@@ -78,7 +78,7 @@ public class ElasticDB implements Serializable{
 	
 	
 	/***
-	 * Create An Index to store words
+	 * Create An Index in elastic search
 	 */
 	public void createIndex() {
 		Client client = createClient();
@@ -116,8 +116,9 @@ public class ElasticDB implements Serializable{
 	}
 	
 	/***
-	 * Add a bunch of words to the elastic search db
-	 * @param words
+	 * Add a bunch of words to the elastic search db of type words.
+	 * We use bulk updates to reduce the number of clients created.
+	 * @param words - List of Word Objects to be added to the index.
 	 */
 	@SuppressWarnings("unchecked")
 	public void bulkAddWords(List<Word> words) {
@@ -214,8 +215,9 @@ public class ElasticDB implements Serializable{
 		}
 	}
 	/***
-	 * 
-	 * @return
+	 * Retrieve the total number of comments seen so far.
+	 * Used in computing IDF in TF-IDF
+	 * @return - Count of total documents
 	 */
 	public Integer getTotalDocs(){
 		Node node = createNode();
@@ -232,7 +234,7 @@ public class ElasticDB implements Serializable{
 	}
 	
 	/***
-	 * 
+	 * Update the total documents seen so far.
 	 * @param documents
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -277,6 +279,12 @@ public class ElasticDB implements Serializable{
 		}
 	}	
 	
+	/***
+	 * Get the number of documents which contains the word
+	 * from elastic search
+	 * @param wordName
+	 * @return
+	 */
 	public Word getWordDocFrequency(String wordName){
 		Node node = createNode();
 		Client client = node.client();
@@ -293,7 +301,12 @@ public class ElasticDB implements Serializable{
 		word.setDocCount(Integer.parseInt(getResponse.getSource().get("count").toString()));
 		return word;
 	}
-	
+	/***
+	 * Bulk update number of documents for each word.
+	 * Performs both update and insert operations.
+	 * @param wordFreq - Map indicating the word and their frequency
+	 * @param onlyInsert - Flag to indicate only insert.
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void bulkUpdateWordDocFrequency(Map<String, Integer> wordFreq, boolean onlyInsert){
 		Node node = createNode();
@@ -346,6 +359,11 @@ public class ElasticDB implements Serializable{
 		closeClient(client);
 	}
 	
+	/***
+	 * Main Function that actually populates your Elastic Search DB.
+	 * FYI : Make sure elastic search server is up and running on your local machine.
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		ElasticDB elasticDB = new ElasticDB();
 		elasticDB.dropIndex();

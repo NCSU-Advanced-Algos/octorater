@@ -9,6 +9,10 @@ import storm.trident.operation.BaseFilter;
 import storm.trident.tuple.TridentTuple;
 
 /**
+ * Default Filter to print a movie.
+ * Prints the name, number of comments predicted
+ *  positive and number predicted negative
+ * 
  * @author
  *  George Mathew (george2)
  *  Kapil Somani  (kmsomani)
@@ -17,9 +21,6 @@ import storm.trident.tuple.TridentTuple;
  */
 public class PrintFilter extends BaseFilter {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1930891314386410366L;
 
 	/* (non-Javadoc)

@@ -9,6 +9,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 /**
+ * Model Object that holds the movie
  * @author
  *  George Mathew (george2),
  *  Kapil Somani  (kmsomani),
@@ -109,6 +110,12 @@ public class Movie implements Serializable {
 		this.comments.add(comment);
 	}
 	
+	/***
+	 * Static method to create a movie object
+	 * using JSON from Rotten Tomatoes
+	 * @param movieJSON - JSON from RottenTomatoes
+	 * @return - Converted Movie Object
+	 */
 	public static Movie makeMovie(JSONObject movieJSON) {
 		try {
 			Movie movie = new Movie(movieJSON.get("id").toString());
@@ -126,7 +133,11 @@ public class Movie implements Serializable {
 		}
 		return null;
 	}
-	
+	/***
+	 * Update comments for a movie.
+	 * @param reviewsAsString - Reviews for a movie
+	 * as string(JSON Array)
+	 */
 	public void updateComments(String reviewsAsString) {
 		try {
 			JSONParser parser = new JSONParser();

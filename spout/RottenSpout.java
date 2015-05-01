@@ -5,10 +5,6 @@ package storm.starter.trident.octorater.spout;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.json.simple.JSONObject;
-
-
 import backtype.storm.Config;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Fields;
@@ -18,6 +14,11 @@ import storm.starter.trident.octorater.utilities.Utils;
 import storm.trident.operation.TridentCollector;
 import storm.trident.spout.IBatchSpout;
 /**
+ * Spout to fetch movies from Rotten Tomatoes.
+ * There are a few limitations like the api 
+ * kicks you out after a few 50 movies it returns. 
+ * And you can query only 4 times a second.
+ * 
  * @author
  *  George Mathew (george2),
  *  Kapil Somani  (kmsomani),
@@ -38,7 +39,7 @@ public class RottenSpout implements IBatchSpout {
 	
 	public RottenSpout(String query, String apiKey) {
 		this.apiKey = apiKey;
-		this.query = query;
+		this.query = query.replaceAll(" ", "_");
 	}
 	
 	@Override

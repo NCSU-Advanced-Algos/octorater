@@ -26,13 +26,13 @@ import java.util.Set;
 import storm.starter.trident.octorater.db.ElasticDB;
 import storm.starter.trident.octorater.models.Word;
 /**
- *
- * @author shubham
+ * @author
+ *  George Mathew (george2),
+ *  Kapil Somani  (kmsomani),
+ *	Kumar Utsav	  (kutsav),
+ *	Shubham Bhawsinka (sbhawsi)
  */
 public class POSTagger implements Serializable{
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 6164064082754267628L;
 	String comment;
     private static MaxentTagger tagger;
@@ -46,6 +46,10 @@ public class POSTagger implements Serializable{
         tfidf = new TFIDF();
     }
     
+    /***
+     * Singleton method to create a tagger
+     * @return
+     */
     public static MaxentTagger getTagger() {
     	if (tagger == null) {
             tagger = new MaxentTagger("data/english-left3words-distsim.tagger");
@@ -53,6 +57,11 @@ public class POSTagger implements Serializable{
     	return tagger;
     }
 
+    /***
+     * Method to get tag for a certain word
+     * @param word
+     * @return
+     */
     public static String getTag(String word) {
     	String[] splits = getTagger().tagString(word).split(Constants.TAG_SEPERATOR);
     	if (splits.length > 1){
@@ -62,7 +71,11 @@ public class POSTagger implements Serializable{
     	}
     }
     
-    
+    /***
+     * Method to get a list of valid words from a sentence
+     * @param sentence
+     * @return - Set of valid words without duplicates
+     */
     public Set<String> getWords(String sentence){
     	Set<String> validWords = new HashSet<String>();
     	for (String word : getTagger().tagString(sentence).split(" ")) {
@@ -73,6 +86,12 @@ public class POSTagger implements Serializable{
     	return validWords;
     }
     
+    /***
+     * Evaluate score for a comment
+     * @param sentence - Comment to be evaluated
+     * @param movieScore - Actual score of a movie(Used for feed back)
+     * @return - Float value which represents score of a movie
+     */
     public float evaluate(String sentence, float movieScore) {
         Set<String> words = getWords(sentence);
         float score = 0;
@@ -105,6 +124,12 @@ public class POSTagger implements Serializable{
         return score;
     }
     
+    /***
+     * Update feedback map with a word
+     * @param map
+     * @param wordName
+     * @param delta
+     */
     private void updateMap(Map<String, Float> map, String wordName, float delta) {
     	if (map.get(wordName) == null ){
     		map.put(wordName, delta);
@@ -113,6 +138,9 @@ public class POSTagger implements Serializable{
     	map.put(wordName, map.get(wordName)+ delta);
     }
     
+    /***
+     * Update Elastic DB for feedback
+     */
     public void feedback() {
 		if (fbWords.keySet().size() < Constants.FEEDBACK_THRESHOLD) {
 			return;

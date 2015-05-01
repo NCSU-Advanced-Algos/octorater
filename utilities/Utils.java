@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.storm.http.HttpResponse;
@@ -185,6 +184,11 @@ public class Utils {
 		return movies;
 	}
 	
+	/***
+	 * Read Words from subjectivity file and cateforize them
+	 * into various sentiments.
+	 * @return
+	 */
 	public static List<Word> parseWords(){
 		BufferedReader br =null;
 		String line;
@@ -231,7 +235,8 @@ public class Utils {
 	}
 	
 	/**
-	 * 
+	 * Retrieve rank of a score based on thresholds.
+	 * Used in feed back, if ranks are different 
 	 * @param score
 	 * @return
 	 */
@@ -247,47 +252,21 @@ public class Utils {
 		} 
 	}
 	
-	public static String categorizeRating(float rating) {
-		if (rating >= Constants.BEST) {
-			return "VERY GOOD";
-		} else if (rating >= Constants.GOOD) {
-			return "GOOD";
-		} else if (rating >= Constants.AVERAGE) {
-			return "AVERAGE";
-		} else {
-			return "BAD";
-		} 
-	}
-
-	public static void writeToFile(Object word) {
+	
+	/***
+	 * Write an object to  our output file
+	 * @param object - Object to write
+	 */
+	public static void writeToFile(Object object) {
 		try {
 			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(Constants.OUTPUT_FILE_PATH, true)));
-			out.println(word.toString());
+			out.println(object.toString());
 			out.close();
 		} catch (IOException e) {
 			System.err.println("Failed to write to file " + e.getMessage());
 		}
 	}
 	
-	public static float median(List<Float> lst) {
-		Collections.sort(lst);
-		int size = lst.size();
-		if (size % 2 == 1){
-			return (float) lst.get(size/2);
-		} else {
-			return (float) (((float) lst.get(size/2) + (float) lst.get(size/2 + 1))/2.0);
-		}
-	}
-	
-	public static void printMovie(Movie movie) {
-		int pos = movie.getPositives();
-		int neg = movie.getNegatives();
-		int total = pos + neg;
-		Utils.writeToFile(movie.getName() + " : ");
-		Utils.writeToFile(pos + " out of " + total + " rated the movie as positive.");
-		Utils.writeToFile(neg + " out of " + total + " rated the movie as negative.");
-		Utils.writeToFile(" ");
-	}
 	
 	public static void main(String[] args) {
 		System.out.println(getMovieStreamURL("e", 2, 1, "qynq4687htc3z7mq2ec7y67x"));
