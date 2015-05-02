@@ -166,7 +166,7 @@ public class Utils {
 			}
 			JSONParser parser = new JSONParser();
 			JSONArray moviesJSON = (JSONArray)((JSONObject)parser.parse(responseBody)).get("movies");
-			if (moviesJSON.size() == 0)
+			if (moviesJSON ==null || moviesJSON.size() == 0)
 				return null;
 			Movie movie;
 			for (Object movieObj: moviesJSON) {
@@ -185,7 +185,7 @@ public class Utils {
 	}
 	
 	/***
-	 * Read Words from subjectivity file and cateforize them
+	 * Read Words from subjectivity file and categorize them
 	 * into various sentiments.
 	 * @return
 	 */
