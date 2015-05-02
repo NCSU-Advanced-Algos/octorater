@@ -83,7 +83,7 @@ public class Constants {
 	/***
 	 * Feedback incremental Delta
 	 */
-	public static final float DELTA = 1f;
+	public static final float DELTA = 0.25f;
 	/***
 	 * Threshold of words for performing feedback
 	 */
